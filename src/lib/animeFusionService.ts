@@ -40,8 +40,9 @@ export interface FusionMode {
 class AnimeFusionService {
   private readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-  // Available anime characters
+  // Available anime characters - Updated with trending characters
   private characters: AnimeCharacter[] = [
+    // Zhong Kui Series
     {
       id: 'zhong-kui-warrior',
       name: 'Zhong Kui Warrior',
@@ -60,6 +61,44 @@ class AnimeFusionService {
       isPremium: true,
       creditCost: 2
     },
+    // Popular Modern Characters
+    {
+      id: 'demon-slayer-style',
+      name: 'Demon Slayer Style',
+      description: 'Transform into a demon slayer with breathing techniques effects',
+      category: 'modern',
+      rarity: 'legendary',
+      isPremium: true,
+      creditCost: 3
+    },
+    {
+      id: 'spy-family-agent',
+      name: 'Spy x Family Agent',
+      description: 'Secret agent with spy gadgets and elegant style',
+      category: 'modern',
+      rarity: 'epic',
+      isPremium: true,
+      creditCost: 2
+    },
+    {
+      id: 'chainsaw-devil',
+      name: 'Chainsaw Devil',
+      description: 'Dark and edgy character with chainsaw powers',
+      category: 'modern',
+      rarity: 'legendary',
+      isPremium: true,
+      creditCost: 3
+    },
+    {
+      id: 'jujutsu-sorcerer',
+      name: 'Jujutsu Sorcerer',
+      description: 'Master of cursed energy with domain expansion effects',
+      category: 'modern',
+      rarity: 'epic',
+      isPremium: true,
+      creditCost: 2
+    },
+    // Classic Popular
     {
       id: 'sakura-dreamer',
       name: 'Sakura Dreamer',
@@ -96,6 +135,7 @@ class AnimeFusionService {
       isPremium: false,
       creditCost: 2
     },
+    // Cyberpunk & Gaming
     {
       id: 'cyber-hero',
       name: 'Cyber Hero',
@@ -106,6 +146,25 @@ class AnimeFusionService {
       creditCost: 2
     },
     {
+      id: 'genshin-elemental',
+      name: 'Genshin Elemental',
+      description: 'Elemental vision holder with magical abilities',
+      category: 'modern',
+      rarity: 'epic',
+      isPremium: true,
+      creditCost: 2
+    },
+    {
+      id: 'honkai-valkyrie',
+      name: 'Honkai Valkyrie',
+      description: 'Powerful valkyrie with futuristic combat suit',
+      category: 'modern',
+      rarity: 'legendary',
+      isPremium: true,
+      creditCost: 3
+    },
+    // Casual & Slice of Life
+    {
       id: 'school-idol',
       name: 'School Idol',
       description: 'Cheerful high school anime character with pop star dreams',
@@ -113,6 +172,24 @@ class AnimeFusionService {
       rarity: 'common',
       isPremium: false,
       creditCost: 1
+    },
+    {
+      id: 'vtuber-style',
+      name: 'VTuber Style',
+      description: 'Virtual streamer aesthetic with cat ears and digital effects',
+      category: 'modern',
+      rarity: 'rare',
+      isPremium: false,
+      creditCost: 1
+    },
+    {
+      id: 'mecha-pilot',
+      name: 'Mecha Pilot',
+      description: 'Giant robot pilot with futuristic pilot suit',
+      category: 'classic',
+      rarity: 'epic',
+      isPremium: true,
+      creditCost: 2
     }
   ];
 
