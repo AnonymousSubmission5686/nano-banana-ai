@@ -352,7 +352,7 @@ export default function HomePage() {
                   </h3>
                   <FusionModeSelector 
                     selectedMode={fusionMode}
-                    onModeSelect={setFusionMode}
+                    onSelectMode={setFusionMode}
                   />
                 </div>
 
@@ -364,7 +364,7 @@ export default function HomePage() {
                   </h3>
                   <CharacterSelector 
                     selectedCharacter={selectedCharacter}
-                    onCharacterSelect={setSelectedCharacter}
+                    onSelectCharacter={setSelectedCharacter}
                     fusionMode={fusionMode}
                   />
                 </div>

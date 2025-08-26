@@ -56,12 +56,12 @@ export default function HeroSection() {
             key={i}
             className="absolute"
             initial={{ 
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight 
+              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1200,
+              y: typeof window !== 'undefined' ? Math.random() * window.innerHeight : Math.random() * 800 
             }}
             animate={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1200,
+              y: typeof window !== 'undefined' ? Math.random() * window.innerHeight : Math.random() * 800,
             }}
             transition={{
               duration: 20 + i * 5,

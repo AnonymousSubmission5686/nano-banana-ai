@@ -2,10 +2,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  avatar?: string;
   credits: number;
   subscription: 'free' | 'starter' | 'pro';
   createdAt: Date;
   updatedAt: Date;
+  lastLoginAt?: Date;
 }
 
 export interface ImageEditRequest {

@@ -28,10 +28,10 @@ interface FusionMode {
 
 interface FusionModeSelectorProps {
   selectedMode: string;
-  onModeSelect: (modeId: string) => void;
+  onSelectMode: (mode: string) => void;
 }
 
-export default function FusionModeSelector({ selectedMode, onModeSelect }: FusionModeSelectorProps) {
+export default function FusionModeSelector({ selectedMode, onSelectMode }: FusionModeSelectorProps) {
   const [showDetails, setShowDetails] = useState<string | null>(null);
 
   const fusionModes: FusionMode[] = [
@@ -127,184 +127,76 @@ export default function FusionModeSelector({ selectedMode, onModeSelect }: Fusio
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Fusion Mode</h2>
-        <p className="text-gray-600">Select how you want to fuse your photo with anime characters</p>
-      </div>
-
-      {/* Fusion Mode Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      {/* Simple Grid Selection */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {fusionModes.map((mode) => (
-          <div key={mode.id} className="space-y-3">
-            <Card
-              className={`cursor-pointer transition-all duration-200 hover:shadow-lg card-hover ${
-                selectedMode === mode.id
-                  ? 'ring-2 ring-anime-500 bg-anime-50'
-                  : 'hover:scale-105'
-              } ${mode.isPremium ? 'border-orange-200' : ''}`}
-              onClick={() => onModeSelect(mode.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      selectedMode === mode.id
-                        ? 'bg-anime-500 text-white'
-                        : mode.isPremium
-                        ? 'bg-orange-100 text-orange-600'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {mode.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900">{mode.name}</h3>
-                        {mode.isPopular && (
-                          <Badge className="bg-anime-500 text-white text-xs">
-                            Popular
-                          </Badge>
-                        )}
-                        {mode.isPremium && (
-                          <Crown className="w-4 h-4 text-orange-500" />
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600">{mode.description}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Badge className={`text-xs ${difficultyColors[mode.difficulty]}`}>
-                      {difficultyLabels[mode.difficulty]}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {mode.creditCost} credit{mode.creditCost > 1 ? 's' : ''}
-                    </Badge>
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowDetails(showDetails === mode.id ? null : mode.id);
-                    }}
-                  >
-                    <Info className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Quick Features Preview */}
-                <div className="flex flex-wrap gap-1">
-                  {mode.features.slice(0, 2).map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                  {mode.features.length > 2 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{mode.features.length - 2} more
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Detailed Information */}
-            {showDetails === mode.id && (
-              <Card className="border-blue-200 bg-blue-50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2 text-blue-900">
-                    <Sparkles className="w-5 h-5" />
-                    {mode.name} Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-blue-900 mb-2">Difficulty Information</h4>
-                    <div className="bg-white rounded-lg p-3">
-                      <p className="text-sm text-gray-700 mb-1">
-                        {getDifficultyInfo(mode.difficulty).description}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Estimated time: {getDifficultyInfo(mode.difficulty).estimatedTime}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-blue-900 mb-2">All Features</h4>
-                    <div className="space-y-2">
-                      {mode.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-sm text-gray-700">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-blue-900 mb-2">Requirements</h4>
-                    <div className="bg-white rounded-lg p-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Credit Cost:</span>
-                        <span className="font-medium text-orange-600">{mode.creditCost} credit{mode.creditCost > 1 ? 's' : ''}</span>
-                      </div>
-                      {mode.isPremium && (
-                        <div className="flex items-center justify-between text-sm mt-1">
-                          <span className="text-gray-600">Required Plan:</span>
-                          <span className="font-medium text-orange-600">Anime Fan or higher</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                    onClick={() => {
-                      onModeSelect(mode.id);
-                      setShowDetails(null);
-                    }}
-                  >
-                    Select {mode.name}
-                  </Button>
-                </CardContent>
-              </Card>
+          <div
+            key={mode.id}
+            className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+              selectedMode === mode.id
+                ? 'border-anime-500 bg-anime-50 shadow-md'
+                : 'border-gray-200 hover:border-anime-300 hover:shadow-sm'
+            }`}
+            onClick={() => onSelectMode(mode.id)}
+          >
+            {/* Premium Badge */}
+            {mode.isPremium && (
+              <div className="absolute -top-2 -right-2">
+                <Crown className="w-4 h-4 text-orange-500 bg-white rounded-full p-0.5 border" />
+              </div>
             )}
+            
+            {/* Popular Badge */}
+            {mode.isPopular && (
+              <div className="absolute -top-2 -left-2">
+                <Badge className="bg-anime-500 text-white text-xs px-2 py-0.5">
+                  Hot
+                </Badge>
+              </div>
+            )}
+
+            {/* Icon */}
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 mx-auto ${
+              selectedMode === mode.id
+                ? 'bg-anime-500 text-white'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {mode.icon}
+            </div>
+
+            {/* Name */}
+            <h3 className="text-sm font-medium text-center text-gray-900 mb-1">
+              {mode.name}
+            </h3>
+
+            {/* Credit Cost */}
+            <div className="text-center">
+              <Badge variant="outline" className="text-xs">
+                {mode.creditCost} credit{mode.creditCost > 1 ? 's' : ''}
+              </Badge>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Selected Mode Display */}
+      {/* Selected Mode Info */}
       {selectedMode && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-green-600" />
-            <h3 className="font-semibold text-green-900">Selected Fusion Mode</h3>
-          </div>
+        <div className="bg-anime-50 border border-anime-200 rounded-lg p-3">
           {(() => {
             const mode = fusionModes.find(m => m.id === selectedMode);
             return mode ? (
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-green-100 text-green-600">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-anime-500 text-white flex items-center justify-center flex-shrink-0">
                   {mode.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-green-900">{mode.name}</p>
-                  <p className="text-sm text-green-700 mb-2">{mode.description}</p>
-                  <div className="flex items-center gap-2">
-                    <Badge className={`text-xs ${difficultyColors[mode.difficulty]}`}>
-                      {difficultyLabels[mode.difficulty]}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {mode.creditCost} credit{mode.creditCost > 1 ? 's' : ''}
-                    </Badge>
-                  </div>
+                  <h4 className="font-medium text-anime-900">{mode.name}</h4>
+                  <p className="text-sm text-anime-700">{mode.description}</p>
                 </div>
+                <Badge variant="outline" className="text-xs">
+                  {mode.creditCost} credit{mode.creditCost > 1 ? 's' : ''}
+                </Badge>
               </div>
             ) : null;
           })()}

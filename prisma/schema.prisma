@@ -17,27 +17,27 @@ model User {
   name          String?
   image         String?
   emailVerified DateTime?
-  password      String?   // For credential login
-  
+  password      String? // For credential login
+
   // Credits and subscription
-  credits       Int       @default(10) // Free credits on signup
-  totalCredits  Int       @default(10)
-  subscription  Subscription?
-  
+  credits      Int           @default(10) // Free credits on signup
+  totalCredits Int           @default(10)
+  subscription Subscription?
+
   // OAuth accounts
-  accounts      Account[]
-  sessions      Session[]
-  
+  accounts Account[]
+  sessions Session[]
+
   // User generated content
-  generations   Generation[]
-  transactions  Transaction[]
-  payments      Payment[]
-  
+  generations  Generation[]
+  transactions Transaction[]
+  payments     Payment[]
+
   // Timestamps
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastLoginAt   DateTime?
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
   @@map("users")
 }
 
@@ -55,9 +55,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@unique([provider, providerAccountId])
   @@map("accounts")
 }
@@ -69,62 +69,62 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("sessions")
 }
 
 // Subscription Plans
 model Subscription {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  stripeCustomerId String?  @unique
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
-  stripePriceId    String?
-  
-  plan             String   // 'free' | 'starter' | 'pro' | 'unlimited'
-  status           String   // 'active' | 'canceled' | 'past_due'
-  creditsPerMonth  Int
-  
+  stripePriceId        String?
+
+  plan            String // 'free' | 'starter' | 'pro' | 'unlimited'
+  status          String // 'active' | 'canceled' | 'past_due'
+  creditsPerMonth Int
+
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean @default(false)
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
+  cancelAtPeriodEnd  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("subscriptions")
 }
 
 // Image Generation Records
 model Generation {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Generation details
-  prompt      String
-  character   String   // Selected anime character
-  fusionMode  String   // Fusion mode used
-  imageUrl    String?  // Original image URL
-  resultUrl   String?  // Generated image URL
-  
+  prompt     String
+  character  String // Selected anime character
+  fusionMode String // Fusion mode used
+  imageUrl   String? // Original image URL
+  resultUrl  String? // Generated image URL
+
   // fal.AI details
   falRequestId String?
   falModel     String?
-  
+
   // Metadata
-  status      String   @default("pending") // 'pending' | 'processing' | 'completed' | 'failed'
+  status      String  @default("pending") // 'pending' | 'processing' | 'completed' | 'failed'
   error       String?
-  creditsUsed Int      @default(1)
-  
+  creditsUsed Int     @default(1)
+
   // Settings
-  settings    Json?    // Store generation settings as JSON
-  
-  createdAt   DateTime @default(now())
+  settings Json? // Store generation settings as JSON
+
+  createdAt   DateTime  @default(now())
   completedAt DateTime?
-  
+
   @@index([userId])
   @@index([status])
   @@map("generations")
@@ -132,44 +132,44 @@ model Generation {
 
 // Credit Transactions
 model Transaction {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type        String   // 'purchase' | 'usage' | 'refund' | 'bonus'
-  amount      Int      // Positive for credit, negative for debit
-  balance     Int      // Balance after transaction
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String // 'purchase' | 'usage' | 'refund' | 'bonus'
+  amount  Int // Positive for credit, negative for debit
+  balance Int // Balance after transaction
+
   description String?
   metadata    Json?
-  
-  createdAt   DateTime @default(now())
-  
+
+  createdAt DateTime @default(now())
+
   @@index([userId])
   @@map("transactions")
 }
 
 // Payment Records
 model Payment {
-  id                String   @id @default(cuid())
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Stripe details
   stripePaymentIntentId String? @unique
   stripeSessionId       String? @unique
-  
-  amount            Int      // Amount in cents
-  currency          String   @default("usd")
-  credits           Int      // Credits purchased
-  
-  status            String   // 'pending' | 'processing' | 'succeeded' | 'failed'
-  
-  metadata          Json?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+
+  amount   Int // Amount in cents
+  currency String @default("usd")
+  credits  Int // Credits purchased
+
+  status String // 'pending' | 'processing' | 'succeeded' | 'failed'
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([status])
   @@map("payments")
@@ -180,8 +180,7 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
-  
+
   @@unique([identifier, token])
   @@map("verification_tokens")
-}
 }

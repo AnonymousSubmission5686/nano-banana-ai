@@ -27,11 +27,11 @@ interface AnimeCharacter {
 
 interface CharacterSelectorProps {
   selectedCharacter: string;
-  onCharacterSelect: (characterId: string) => void;
-  fusionMode: string;
+  onSelectCharacter: (character: string) => void;
+  fusionMode?: string;
 }
 
-export default function CharacterSelector({ selectedCharacter, onCharacterSelect, fusionMode }: CharacterSelectorProps) {
+export default function CharacterSelector({ selectedCharacter, onSelectCharacter, fusionMode = '' }: CharacterSelectorProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   
   const characters: AnimeCharacter[] = [
@@ -175,61 +175,61 @@ export default function CharacterSelector({ selectedCharacter, onCharacterSelect
         </div>
       </div>
 
-      {/* Character Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Character Grid - Simplified */}
+      <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-3">
         {filteredCharacters.map((character) => (
-          <Card
+          <div
             key={character.id}
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg card-hover ${
+            className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
               selectedCharacter === character.id
-                ? 'ring-2 ring-anime-500 bg-anime-50'
-                : 'hover:scale-105'
-            } ${character.isPremium ? 'border-orange-200' : ''}`}
-            onClick={() => onCharacterSelect(character.id)}
+                ? 'border-anime-500 bg-anime-50 shadow-md'
+                : 'border-gray-200 hover:border-anime-300 hover:shadow-sm'
+            }`}
+            onClick={() => onSelectCharacter(character.id)}
           >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    selectedCharacter === character.id
-                      ? 'bg-anime-500 text-white'
-                      : character.isPremium
-                      ? 'bg-orange-100 text-orange-600'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {character.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{character.name}</h3>
-                    <p className="text-sm text-gray-600">{character.description}</p>
-                  </div>
-                </div>
-                {character.isPremium && (
-                  <Crown className="w-5 h-5 text-orange-500" />
-                )}
+            {/* Premium Badge */}
+            {character.isPremium && (
+              <div className="absolute -top-1 -right-1">
+                <Crown className="w-3 h-3 text-orange-500 bg-white rounded-full p-0.5 border" />
               </div>
-              
-              <div className="flex items-center justify-between">
-                <Badge 
-                  className={`text-xs ${rarityColors[character.rarity]}`}
-                >
-                  {character.rarity.charAt(0).toUpperCase() + character.rarity.slice(1)}
-                </Badge>
-                
-                {recommendedCharacters.includes(character.id) && (
-                  <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">
-                    Recommended
-                  </Badge>
-                )}
+            )}
+            
+            {/* Recommended Dot */}
+            {recommendedCharacters.includes(character.id) && (
+              <div className="absolute -top-1 -left-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               </div>
-              
-              {character.isPremium && (
-                <div className="mt-2 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                  Premium Character
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            )}
+
+            {/* Character Avatar */}
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-2 mx-auto ${
+              selectedCharacter === character.id
+                ? 'bg-anime-500 text-white'
+                : character.rarity === 'legendary' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
+                character.rarity === 'epic' ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white' :
+                character.rarity === 'rare' ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white' :
+                'bg-gray-100 text-gray-600'
+            }`}>
+              <div className="w-6 h-6">
+                {character.icon}
+              </div>
+            </div>
+
+            {/* Name */}
+            <h3 className="text-xs font-medium text-center text-gray-900 mb-1 line-clamp-2">
+              {character.name}
+            </h3>
+
+            {/* Rarity indicator */}
+            <div className="text-center">
+              <div className={`inline-block w-2 h-2 rounded-full ${
+                character.rarity === 'legendary' ? 'bg-yellow-400' :
+                character.rarity === 'epic' ? 'bg-purple-400' :
+                character.rarity === 'rare' ? 'bg-blue-400' :
+                'bg-gray-400'
+              }`}></div>
+            </div>
+          </div>
         ))}
       </div>
 
