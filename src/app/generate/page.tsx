@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Wand2, 
   Upload, 
@@ -11,11 +12,13 @@ import {
   Loader2, 
   Sparkles,
   Image as ImageIcon,
-  Zap
+  Zap,
+  CreditCard
 } from 'lucide-react';
-import { animeFusionService } from '@/lib/animeFusionService';
 import CharacterSelector from '@/components/CharacterSelector';
 import FusionModeSelector from '@/components/FusionModeSelector';
+import Navigation from '@/components/Navigation';
+import { useAppStore } from '@/lib/store';
 
 export default function GeneratePage() {
   const [prompt, setPrompt] = useState('');
@@ -25,14 +28,36 @@ export default function GeneratePage() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [credits, setCredits] = useState(10); // Demo credits
+  const [processingTime, setProcessingTime] = useState<number | null>(null);
+  
+  const { user, updateUserCredits, addToHistory } = useAppStore();
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedImage(file);
       const url = URL.createObjectURL(file);
       setUploadedImageUrl(url);
+      
+      // Upload to server/fal.ai storage
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Image uploaded successfully:', result.imageUrl);
+        } else {
+          console.warn('Image upload failed, using local URL');
+        }
+      } catch (error) {
+        console.warn('Image upload failed, using local URL:', error);
+      }
     }
   };
 
@@ -41,36 +66,91 @@ export default function GeneratePage() {
       alert('Please fill in all required fields');
       return;
     }
+    
+    if (!user) {
+      alert('Please sign in to generate images');
+      return;
+    }
+    
+    const creditCost = getCreditCost(selectedMode);
+    if (user.credits < creditCost) {
+      alert(`Insufficient credits. You need ${creditCost} credits for this fusion.`);
+      return;
+    }
 
     setIsGenerating(true);
     setGeneratedImage(null);
+    setProcessingTime(null);
+    
+    const startTime = Date.now();
 
     try {
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Call the real API
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          imageUrl: uploadedImageUrl,
+          character: selectedCharacter,
+          fusionMode: selectedMode,
+          userId: user.id,
+        }),
+      });
+
+      const result = await response.json();
       
-      // For demo purposes, use a placeholder image
-      setGeneratedImage('https://via.placeholder.com/512x512/667eea/ffffff?text=Generated+Image');
-      
-      // Deduct credits
-      const cost = animeFusionService.calculateCreditCost(selectedCharacter, selectedMode);
-      setCredits(prev => Math.max(0, prev - cost));
+      if (result.success) {
+        setGeneratedImage(result.imageUrl);
+        setProcessingTime(result.processingTime);
+        
+        // Update user credits
+        updateUserCredits(user.credits - result.creditsUsed);
+        
+        // Add to history
+        addToHistory({
+          id: Date.now().toString(),
+          userId: user.id,
+          prompt,
+          originalImage: uploadedImageUrl || undefined,
+          editedImage: result.imageUrl,
+          status: 'completed',
+          creditsUsed: result.creditsUsed,
+          processingTime: result.processingTime,
+          createdAt: new Date(),
+          completedAt: new Date(),
+        });
+        
+      } else {
+        throw new Error(result.error || 'Generation failed');
+      }
       
     } catch (error) {
       console.error('Generation failed:', error);
-      alert('Generation failed. Please try again.');
+      alert(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsGenerating(false);
     }
   };
+  
+  const getCreditCost = (mode: string): number => {
+    const costs = {
+      'group-photo': 1,
+      'character-replacement': 2,
+      'scene-integration': 2,
+      'interactive-effects': 3
+    };
+    return costs[mode as keyof typeof costs] || 1;
+  };
 
-  const creditCost = selectedCharacter && selectedMode 
-    ? animeFusionService.calculateCreditCost(selectedCharacter, selectedMode)
-    : 0;
+  const creditCost = selectedMode ? getCreditCost(selectedMode) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen hero-gradient">
+      <Navigation />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">
@@ -79,12 +159,14 @@ export default function GeneratePage() {
           <p className="text-gray-300">Transform your photos with anime magic</p>
           
           {/* Credits Display */}
-          <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30">
-            <Zap className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium text-purple-300">
-              {credits} Credits Available
-            </span>
-          </div>
+          {user && (
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30">
+              <CreditCard className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium text-purple-300">
+                {user.credits} Credits Available
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -169,7 +251,7 @@ export default function GeneratePage() {
             {/* Generate Button */}
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || !prompt || !selectedCharacter || !selectedMode || credits < creditCost}
+              disabled={isGenerating || !prompt || !selectedCharacter || !selectedMode || !user || (user && user.credits < creditCost)}
               className="w-full h-12 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               {isGenerating ? (
